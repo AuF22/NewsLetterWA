@@ -1,30 +1,44 @@
 from tkinter.filedialog import askopenfilename
 import openpyxl
-
 from selenium import webdriver
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.support.ui import WebDriverWait
 import os
+import time
+
+
+def handler_number(number: str)-> str:
+    text = str(number).replace(" ", "")
+    text = text.replace("+", "")
+    text = f"996{text[-9:]}"
+    return(text)
+
 
 def read_excel():
-    # Создаем папки
-    # ==============================================
-    path = f"C:{os.sep}Program Files{os.sep}WAusers"
-    try:
-        os.makedirs(path)
-    except FileExistsError:
-        pass
-    # ==============================================
+    # # Создаем папки
+    # # ==============================================
+    # path = f"C:{os.sep}Program Files{os.sep}WAusers"
+    # try:
+    #     os.makedirs(path)
+    # except FileExistsError:
+    #     pass
+    # # ==============================================
 
     # Настроиваем driver
     # ==============================================================
-    driver = webdriver.Chrome()
+    options = webdriver.ChromeOptions()
+    options.add_argument("user-agent=Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:84.0) Gecko/20100101 Firefox/84.0")
+    driver = webdriver.Chrome(options=options)
     wait = WebDriverWait(driver, 30)
-    url = "www.google.com"
+    url = "https://web.whatsapp.com/"
     driver.get(url)
+    time.sleep(30)
     # ==============================================================
+
+    text = ""
+    url_sms = "https://web.whatsapp.com/send?phone={number}&text={text}"
 
     # Создаем объкт класса для обрабокти данных
     wb = openpyxl.load_workbook(askopenfilename())
@@ -45,6 +59,22 @@ def read_excel():
         
         elif sheet[f'D{i}'].value is not None:
             return False
+        
+        text = text.replace(' ', '%20')
+
+        try:
+            url_phone = url_sms.format(number=handler_number(number_1), text=text)
+
+            driver.get(url_phone)
+
+            wait.until(EC.element_to_be_clickable((By.XPATH, '/html/body/div[1]/div/div/div[5]/div/footer/div[1]/div/span[2]/div/div[2]/div[2]/button')))
+            driver.find_element(By.XPATH, '/html/body/div[1]/div/div/div[5]/div/footer/div[1]/div/span[2]/div/div[2]/div[2]').click()
+            time.sleep(5)
+            
+        except:
+            pass
+
+
         i += 1
 
 def main():
