@@ -3,13 +3,12 @@ import openpyxl
 from selenium import webdriver
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.support.ui import WebDriverWait
-import os
 import time
 
 
 def handler_number(number: str)-> str:
+    """Приводит номера телефонов в единный формат для отправки"""
     text = str(number).replace(" ", "")
     text = text.replace("+", "")
     text = f"996{text[-9:]}"
@@ -38,9 +37,10 @@ def read_excel():
     # ==============================================================
 
     text = ""
+    # Подготавливаем ссылку для отправки sms
     url_sms = "https://web.whatsapp.com/send?phone={number}&text={text}"
 
-    # Создаем объкт класса для обрабокти данных
+    # Создаем объект класса для обрабокти данных
     wb = openpyxl.load_workbook(askopenfilename())
 
     # Получаем активный лист
@@ -49,31 +49,42 @@ def read_excel():
     # Начало отчета ячейки,всегда будет начинаться от 2
     i = 2
 
-    while True:
-        number_1 = sheet[f'A{i}'].value
-        number_2 = sheet[f'B{i}'].value
-        text = sheet[f'C{i}'].value
+    # Запускаем программу отправку с бесконечным циклом
+    # =================================================
+    try:
+        while True:
+            number_1 = sheet[f'A{i}'].value
+            number_2 = sheet[f'B{i}'].value
+            text = sheet[f'C{i}'].value
 
-        if number_1 is None:
-            return False
-        
-        elif sheet[f'D{i}'].value is not None:
-            return False
-        
-        text = text.replace(' ', '%20')
-
-        try:
-            url_phone = url_sms.format(number=handler_number(number_1), text=text)
-
-            driver.get(url_phone)
-
-            wait.until(EC.element_to_be_clickable((By.XPATH, '/html/body/div[1]/div/div/div[5]/div/footer/div[1]/div/span[2]/div/div[2]/div[2]/button')))
-            driver.find_element(By.XPATH, '/html/body/div[1]/div/div/div[5]/div/footer/div[1]/div/span[2]/div/div[2]/div[2]').click()
-            time.sleep(5)
+            if number_1 is None:
+                return False
             
-        except:
-            pass
+            elif sheet[f'D{i}'].value is not None:
+                return False
+            
+            text = text.replace(' ', '%20')
 
+            if sheet[f'D{i}'].value == 'Отправлено':
+                continue
+
+            try:
+                url_phone = url_sms.format(number=handler_number(number_1), text=text)
+
+                driver.get(url_phone)
+
+                wait.until(EC.element_to_be_clickable((By.XPATH, '/html/body/div[1]/div/div/div[5]/div/footer/div[1]/div/span[2]/div/div[2]/div[2]/button')))
+                driver.find_element(By.XPATH, '/html/body/div[1]/div/div/div[5]/div/footer/div[1]/div/span[2]/div/div[2]/div[2]').click()
+                time.sleep(5)
+
+                sheet[f'D{i}'] = 'Отправлено'
+                
+            except:
+                pass
+
+    except:
+        wb.save('Отправлено.xlsx')
+    # =================================================================
 
         i += 1
 
