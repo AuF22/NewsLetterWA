@@ -28,7 +28,9 @@ def read_excel():
     # Настроиваем driver
     # ==============================================================
     options = webdriver.ChromeOptions()
-    options.add_argument("user-agent=Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:84.0) Gecko/20100101 Firefox/84.0")
+    proxy = "50.221.230.186Э" # free proxy  
+    options.add_argument("--proxy-server=%s" % proxy) 
+    options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 YaBrowser/23.9.0.2325 Yowser/2.5 Safari/537.36")
     driver = webdriver.Chrome(options=options)
     wait = WebDriverWait(driver, 30)
     url = "https://web.whatsapp.com/"
@@ -64,20 +66,25 @@ def read_excel():
                 return False
             
             text = text.replace(' ', '%20')
+            text = text.replace('\n', '%0D%0A')
 
             if sheet[f'D{i}'].value == 'Отправлено':
+                i += 1
                 continue
-
+            i += 1
+            
             try:
                 url_phone = url_sms.format(number=handler_number(number_1), text=text)
-
+                print (url_phone)
                 driver.get(url_phone)
+                
 
                 wait.until(EC.element_to_be_clickable((By.XPATH, '/html/body/div[1]/div/div/div[5]/div/footer/div[1]/div/span[2]/div/div[2]/div[2]/button')))
                 driver.find_element(By.XPATH, '/html/body/div[1]/div/div/div[5]/div/footer/div[1]/div/span[2]/div/div[2]/div[2]').click()
                 time.sleep(5)
 
-                sheet[f'D{i}'] = 'Отправлено'
+                sheet[f'D{i-1}'] = 'Отправлено'
+                wb.save('Отправлено.xlsx')
                 
             except:
                 pass
@@ -85,8 +92,7 @@ def read_excel():
     except:
         wb.save('Отправлено.xlsx')
     # =================================================================
-
-        i += 1
+    
 
 def main():
     pass
