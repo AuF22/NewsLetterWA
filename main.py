@@ -70,18 +70,18 @@ def read_excel():
 
             if sheet[f'D{i}'].value == 'Отправлено':
                 i += 1
+                print('Продолжаем')
                 continue
             i += 1
             
             try:
                 url_phone = url_sms.format(number=handler_number(number_1), text=text)
-                print (url_phone)
                 driver.get(url_phone)
                 
-
                 wait.until(EC.element_to_be_clickable((By.XPATH, '/html/body/div[1]/div/div/div[5]/div/footer/div[1]/div/span[2]/div/div[2]/div[2]/button')))
                 driver.find_element(By.XPATH, '/html/body/div[1]/div/div/div[5]/div/footer/div[1]/div/span[2]/div/div[2]/div[2]').click()
                 time.sleep(5)
+                print(f"Отправлено: {i=}")
 
                 sheet[f'D{i-1}'] = 'Отправлено'
                 wb.save('Отправлено.xlsx')
