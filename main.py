@@ -28,8 +28,6 @@ def read_excel():
     # Настроиваем driver
     # ==============================================================
     options = webdriver.ChromeOptions()
-    proxy = "50.221.230.186Э" # free proxy  
-    options.add_argument("--proxy-server=%s" % proxy) 
     options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 YaBrowser/23.9.0.2325 Yowser/2.5 Safari/537.36")
     driver = webdriver.Chrome(options=options)
     wait = WebDriverWait(driver, 30)
@@ -54,6 +52,7 @@ def read_excel():
     # Запускаем программу отправку с бесконечным циклом
     # =================================================
     try:
+        count = 0
         while True:
             number_1 = sheet[f'A{i}'].value
             number_2 = sheet[f'B{i}'].value
@@ -75,13 +74,14 @@ def read_excel():
             i += 1
             
             try:
+                count += 1
                 url_phone = url_sms.format(number=handler_number(number_1), text=text)
                 driver.get(url_phone)
                 
-                wait.until(EC.element_to_be_clickable((By.XPATH, '/html/body/div[1]/div/div/div[5]/div/footer/div[1]/div/span[2]/div/div[2]/div[2]/button')))
-                driver.find_element(By.XPATH, '/html/body/div[1]/div/div/div[5]/div/footer/div[1]/div/span[2]/div/div[2]/div[2]').click()
+                wait.until(EC.element_to_be_clickable((By.XPATH, '/html/body/div[1]/div/div[2]/div[4]/div/footer/div[1]/div/span[2]/div/div[2]/div[2]/button')))
+                driver.find_element(By.XPATH, '/html/body/div[1]/div/div[2]/div[4]/div/footer/div[1]/div/span[2]/div/div[2]/div[2]/button').click()
                 time.sleep(5)
-                print(f"Отправлено: {i=}")
+                print(f"Отправлено: {i=}, {count=}")
 
                 sheet[f'D{i-1}'] = 'Отправлено'
                 wb.save('Отправлено.xlsx')
